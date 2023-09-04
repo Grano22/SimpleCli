@@ -1,0 +1,26 @@
+{
+    "name": "grano22/simplecli",
+    "description": "Create program with simple cli interface, lightweight and easy to use",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Grano22\\SimpleCli\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Grano22\\SimpleCli\\Tests\\Functional\\": "tests/functional"
+        }
+    },
+    "authors": [
+        {
+            "name": "Adrian Błasiak",
+            "email": "grano22@outlook.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require-dev": {
+        "phpunit/phpunit": "^10"
+    }
+}
