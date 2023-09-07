@@ -9,7 +9,7 @@ use RuntimeException;
 class SimpleCliOption {
     public const OPTIONAL = 0b010;
     public const REQUIRED = 0b001;
-    public const NEGABLE = 0b001;
+    public const NEGABLE = 0b100;
 
     private mixed $value;
 

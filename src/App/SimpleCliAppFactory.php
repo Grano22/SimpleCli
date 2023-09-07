@@ -51,7 +51,9 @@ class SimpleCliAppFactory {
         string $name,
         int $options
     ): self {
-        $previouslyDefinedArguments = $this->definedArgumentsForCommand[$commandName] ?? [];
+        $previouslyDefinedArguments = isset($this->definedArgumentsForCommand[$commandName])
+            ? $this->definedArgumentsForCommand[$commandName]->toArray()
+            : [];
 
         $previouslyDefinedArguments[] = new SimpleCliArgument(
             $name,
@@ -81,7 +83,9 @@ class SimpleCliAppFactory {
         string $name,
         int $options
     ): self {
-        $previouslyDefinedOptions = $this->definedOptionsForCommand[$commandName] ?? [];
+        $previouslyDefinedOptions = isset($this->definedOptionsForCommand[$commandName])
+            ? $this->definedOptionsForCommand[$commandName]->toArray()
+            : [];
 
         $previouslyDefinedOptions[] = new SimpleCliOption(
             $name,

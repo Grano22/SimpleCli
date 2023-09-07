@@ -81,7 +81,6 @@ class SimpleCliOperator {
 
     private function readArguments(SimpleCliCommand $command): void
     {
-        //$remainingParts = $this->invokedCommand->getUnusedParts();
         $allParts = $this->invokedCommand->getAllParts();
         $index = 1;
 
@@ -112,58 +111,15 @@ class SimpleCliOperator {
 
     private function readOptions(SimpleCliCommand $command): void
     {
-//        $optionsProtoShorts = '';
-//        $optionsProtoFull = [];
-//
-//        foreach ($command->getDefinedOptions()->toArray() as $option) {
-//            $optionsProtoFull[] = $option->getName();
-//
-//            foreach ($option->getAliases() as $alias) {
-//                if (strlen($alias) === 1) {
-//                    $optionsProtoShorts .= $alias;
-//
-//                    continue;
-//                }
-//
-//                $optionsProtoFull[] = $alias;
-//            }
-//        }
-//
-//        $receivedOptions = getopt($optionsProtoShorts, $optionsProtoFull);
-
-//        foreach ($command->getDefinedOptions()->toArray() as $option) {
-//            $occuredTimes = 0;
-//
-//            foreach ([$option->getName(), ...$option->getAliases()] as $alias) {
-//                $occuredTimes += (int)isset($receivedOptions[$alias]);
-//
-//                if ($occuredTimes > 1) {
-//                    echo "Option {$option->getName()} as alias $alias can be only specified one time";
-//
-//                    exit(1);
-//                }
-//
-//                if ($occuredTimes) {
-//                    $option->bindValue($receivedOptions[$alias]);
-//
-//                    continue 2;
-//                }
-//            }
-//
-//            if (!$occuredTimes && ($option->getOptions() & SimpleCliOption::REQUIRED)) {
-//                echo "Option {$option->getName()} is missing";
-//
-//                exit(1);
-//            }
-//
-//            $option->bindValue(null);
-//        }
-
         foreach ($command->getDefinedOptions()->toArray() as $option) {
             $occuredTimes = 0;
 
             foreach ([$option->getName(), ...$option->getAliases()] as $alias) {
-                $optionValue = $this->invokedCommand->getValueAssociatedToOption($alias, $alias !== $option->getName(), !($option->getOptions() & SimpleCliOption::NEGABLE));
+                $optionValue = $this->invokedCommand->getValueAssociatedToOption(
+                    $alias,
+                    $alias !== $option->getName(),
+                    !($option->getOptions() & SimpleCliOption::NEGABLE)
+                );
                 $occuredTimes += (int)isset($optionValue);
 
                 if ($occuredTimes > 1) {

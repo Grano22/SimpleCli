@@ -24,7 +24,7 @@ class SimpleCliCommandInput {
     public function getPipedData(bool $switched = false): string
     {
         if ($switched) {
-            return $this->arguments->getPiped()->getValue();
+            return $this->arguments?->getPiped()?->getValue() ?? '';
         }
 
         return $this->pipeData;

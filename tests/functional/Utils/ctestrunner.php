@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Grano22\SimpleCli\App\SimpleCliApp;
+use Grano22\SimpleCli\App\SimpleCliAppFactory;
 
 require_once __DIR__ . "/../../../vendor/autoload.php";
 
@@ -13,7 +14,28 @@ if (!$testAppVariant) {
     exit(1);
 }
 
-/** @var SimpleCliApp $appVariant */
-$appVariant = (require_once "$testAppVariant");
+/** @var SimpleCliAppFactory $appVariantProto */
+$appVariantProto = (require_once "$testAppVariant") or die("Cannot locale app variant in path $testAppVariant");
+
+$variantAppExtensions = getenv('RUNNER_APP_EXTENSIONS');
+
+if ($variantAppExtensions) {
+    $parsedAppExtensions = json_decode($variantAppExtensions, true);
+
+    foreach ($parsedAppExtensions as $appExtension) {
+        switch ($appExtension['action']) {
+            case "createOption":
+                $appVariantProto->withCommandsOptions(
+                    commandNames: $appExtension['commandsNames'],
+                    name: $appExtension['name'],
+                    options: $appExtension['options'] ?? 0b0
+                );
+                break;
+            default: throw new RuntimeException("Undefined app extension action: {$appExtension['action']}");
+        }
+    }
+}
+
+$appVariant = $appVariantProto->build();
 
 $appVariant->autoExecuteCommand();

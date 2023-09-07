@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Grano22\SimpleCli\Command\Input;
 
-class SimpleCliArgumentsCollection {
-    /** @var array<string, SimpleCliArgument> $elements */
-    private array $elements;
+use Grano22\SimpleCli\Data\CollectionStructure;
 
+/** @implements CollectionStructure<SimpleCliArgument> */
+class SimpleCliArgumentsCollection extends CollectionStructure {
     public function __construct(SimpleCliArgument ...$cliArguments) {
         $this->elements = array_combine(
             array_map(static fn (SimpleCliArgument $cliArgument) => $cliArgument->getName(), $cliArguments),
@@ -17,18 +17,10 @@ class SimpleCliArgumentsCollection {
 
     public function getPiped(): ?SimpleCliArgument
     {
-        return array_filter(
+        return current(array_filter(
             array_values($this->elements),
             static fn (SimpleCliArgument $argument) => $argument->getOptions() & SimpleCliArgument::PIPED
-        )[0] ?? null;
-    }
-
-    public function getByName(string $name): ?SimpleCliArgument
-    {
-        return
-            array_key_exists($name, $this->elements) ?
-                $this->elements[$name] :
-                null;
+        )) ?? null;
     }
 
     /** @return SimpleCliArgument[] */
