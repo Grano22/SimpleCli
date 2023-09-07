@@ -30,6 +30,11 @@ class SimpleCliOption {
         return array_filter([$this->name, ...$this->aliases], static fn(string $name) => strlen($name) === 1);
     }
 
+    public function getLongNames(): array
+    {
+        return array_filter([$this->name, ...$this->aliases], static fn(string $name) => strlen($name) > 1);
+    }
+
     public function getAliases(): array
     {
         return $this->aliases;
@@ -38,6 +43,11 @@ class SimpleCliOption {
     public function getOptions(): int
     {
         return $this->options;
+    }
+
+    public function isNegable(): bool
+    {
+        return !!($this->options & SimpleCliOption::NEGABLE);
     }
 
     public function bindValue(mixed $newValue): self

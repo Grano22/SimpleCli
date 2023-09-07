@@ -18,16 +18,25 @@ class SimpleCliAppTest extends TestCase
         $short_option_value = 'ShortValue';
         $long_option_value = 'Long Value';
         $piped_data = 'piped data';
+        $short_option_with_spaced_value = 'spaced_val';
+        $short_option_with_trimed_value = 'trimed_val';
+        $simplified_option_value = 'simple';
+        $complex_option_value = 'Complex Value';
 
         // Act
         $commandTester = CommandTester::run(
             sprintf(
-                'echo "%s" | php ' . __DIR__ . '/Utils/ctestrunner.php test:all %s %s %s %s',
+                'echo "%s" | php ' . __DIR__ . '/Utils/ctestrunner.php test:all' . str_repeat(' %s', 9),
                 $piped_data,
                 $argument_1,
                 '--optNegable',
                 "--optWithValue $short_option_value",
-                "--optWithLongValue '$long_option_value'"
+                "--optWithLongValue '$long_option_value'",
+                "-o $short_option_with_spaced_value",
+                "-p$short_option_with_trimed_value",
+                "--optWithSimplifiedValue=$simplified_option_value",
+                "--optWithComplexValue='$complex_option_value'",
+                "-abc"
             ),
             __DIR__ . '/variants/MainVariant.php'
         );
@@ -41,6 +50,11 @@ class SimpleCliAppTest extends TestCase
             optWithLongValue is $long_option_value
             Piped argument directly: $piped_data
             Piped argument indirectly: $piped_data
+            Short option with spaced value: $short_option_with_spaced_value
+            Short option with trimed value: $short_option_with_trimed_value
+            a is set
+            b is set
+            c is set
             Data from stdin: $piped_data
             EXPECTED
         );

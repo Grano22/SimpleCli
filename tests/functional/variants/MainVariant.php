@@ -31,16 +31,51 @@ $cliAppProto = SimpleCliAppFactory::create()
         name: 'optOptional',
         options: SimpleCliOption::OPTIONAL
     )
-    ->withCommandOption(
-        commandName: 'test:no-supported',
-        name: 'o',
-        options: SimpleCliOption::REQUIRED
-    )
     ->withCommandArgument(
         commandName: 'test:all',
         name: 'argPiped',
         options: SimpleCliArgument::REQUIRED | SimpleCliArgument::PIPED
     )
+    ->withCommandOption(
+        commandName: 'test:all',
+        name: 'o',
+        options: SimpleCliOption::REQUIRED
+    )
+    ->withCommandOption(
+        commandName: 'test:all',
+        name: 'p',
+        options: SimpleCliOption::REQUIRED
+    )
+    ->withCommandOption(
+        commandName: 'test:all',
+        name: 'optWithSimplifiedValue',
+        options: SimpleCliOption::REQUIRED
+    )
+    ->withCommandOption(
+        commandName: 'test:all',
+        name: 'optWithComplexValue',
+        options: SimpleCliOption::REQUIRED
+    )
+    ->withCommandOption(
+        commandName: 'test:all',
+        name: 'a',
+        options: SimpleCliOption::REQUIRED | SimpleCliOption::NEGABLE
+    )
+    ->withCommandOption(
+        commandName: 'test:all',
+        name: 'b',
+        options: SimpleCliOption::REQUIRED | SimpleCliOption::NEGABLE
+    )
+    ->withCommandOption(
+        commandName: 'test:all',
+        name: 'c',
+        options: SimpleCliOption::REQUIRED | SimpleCliOption::NEGABLE
+    )
+//    ->withCommandOption(
+//        commandName: 'test:no-supported',
+//        name: 'o',
+//        options: SimpleCliOption::REQUIRED
+//    )
     ->withCommand(
         name: 'test:all',
         executionLogic: static function(SimpleCliCommandInput $input) {
@@ -51,6 +86,11 @@ $cliAppProto = SimpleCliAppFactory::create()
             $piped_option_directly = $input->getArguments()->getByName('argPiped')->getValue();
             $piped_data = $input->getPipedData(false);
             $piped_option_indirectly = $input->getPipedData(true);
+            $shortOptionWithSpacedValue = $input->getOptions()->getByName('o')->getValue();
+            $shortOptionWithTrimedValue = $input->getOptions()->getByName('p')->getValue();
+            $splited_negable_option_a = $input->getOptions()->getByName('a')->getValue();
+            $splited_negable_option_b = $input->getOptions()->getByName('b')->getValue();
+            $splited_negable_option_c = $input->getOptions()->getByName('c')->getValue();
 
             if ($argument_1) {
                 echo "arg1 is $argument_1" . PHP_EOL;
@@ -74,6 +114,26 @@ $cliAppProto = SimpleCliAppFactory::create()
 
             if ($piped_option_indirectly) {
                 echo "Piped argument indirectly: $piped_option_indirectly";
+            }
+
+            if ($shortOptionWithSpacedValue) {
+                echo "Short option with spaced value: $shortOptionWithSpacedValue" . PHP_EOL;
+            }
+
+            if ($shortOptionWithTrimedValue) {
+                echo "Short option with trimed value: $shortOptionWithTrimedValue" . PHP_EOL;
+            }
+
+            if ($splited_negable_option_a) {
+                echo "a is set" . PHP_EOL;
+            }
+
+            if ($splited_negable_option_a) {
+                echo "b is set" . PHP_EOL;
+            }
+
+            if ($splited_negable_option_a) {
+                echo "c is set" . PHP_EOL;
             }
 
             echo "Data from stdin: $piped_data";
