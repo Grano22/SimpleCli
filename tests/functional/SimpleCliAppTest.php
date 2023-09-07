@@ -8,7 +8,6 @@ use Grano22\SimpleCli\Command\Input\SimpleCliOption;
 use Grano22\SimpleCli\Tests\Functional\Utils\CommandTester;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use RuntimeException;
 
 class SimpleCliAppTest extends TestCase
 {

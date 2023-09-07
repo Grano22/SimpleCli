@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Grano22\SimpleCli;
 
 use Generator;
+use Grano22\SimpleCli\Command\Input\CommandPartsBuilder;
 use Grano22\SimpleCli\Command\Input\SimpleCliArgument;
 use Grano22\SimpleCli\Command\Input\SimpleCliCommandsStack;
 use Grano22\SimpleCli\Command\Input\SimpleCliOption;
@@ -28,12 +29,14 @@ class SimpleCliOperator {
     private string $pipedData;
 
     public function __construct() {
-        $this->invokedCommand = SimpleCliInvokedCommand::build();
     }
 
     public function prepareActualRequestedCommand(SimpleCliCommandsStack $definedCommands): ?SimpleCliCommand
     {
-        global $argv;
+        global $argv, $argc;
+
+        $commandPartBuilder = new CommandPartsBuilder();
+        $commandParts = $commandPartBuilder->build($argv, $argc);
 
         $requestedCommand = $argv[1] ?? '';
         $commandToUse = $definedCommands->getByName($requestedCommand);
@@ -43,6 +46,13 @@ class SimpleCliOperator {
             exit(1);
         }
 
+        $commandParts = $commandPartBuilder->rebuildWithSeparatedArgs(
+            $commandParts,
+            $commandToUse->getDefinedArguments(),
+            $commandToUse->getDefinedOptions()
+        );
+
+        $this->invokedCommand = SimpleCliInvokedCommand::build(basename($argv[0]), $commandParts);
         $this->invokedCommand->markArgumentAsUsed(0);
 
         $this->readPipeData();
@@ -54,7 +64,10 @@ class SimpleCliOperator {
         if ($unusedParts !== []) {
             throw new RuntimeException(
                 "Unused parts: " .
-                implode(',', array_map(static fn(array $unusedPart) => $unusedPart['content'], $unusedParts))
+                implode(
+                    ',',
+                    array_map(static fn(array $unusedPart) => $unusedPart[0] . ' - ' . $unusedPart[1], $unusedParts)
+                )
             );
         }
 
@@ -91,18 +104,18 @@ class SimpleCliOperator {
                 continue;
             }
 
-            if (($argument->getOptions() & SimpleCliArgument::REQUIRED) && !isset($allParts[$index])) {
+            if (($argument->getOptions() & SimpleCliArgument::REQUIRED) && !isset($allParts[CommandPartsBuilder::ARGUMENT][$index])) {
                 echo "Argument " . $index + 1 . " named {$argument->getName()} must be specified";
                 exit(1);
             }
 
-            if (($argument->getOptions() & SimpleCliArgument::OPTIONAL) && !isset($allParts[$index])) {
+            if (($argument->getOptions() & SimpleCliArgument::OPTIONAL) && !isset($allParts[CommandPartsBuilder::ARGUMENT][$index])) {
                 $argument->bindValue(null);
 
                 continue;
             }
 
-            $argument->bindValue($allParts[$index]['content']);
+            $argument->bindValue($allParts[CommandPartsBuilder::ARGUMENT][$index]);
             $this->invokedCommand->markArgumentAsUsed($index);
 
             $index++;

@@ -4,102 +4,81 @@ declare(strict_types=1);
 
 namespace Grano22\SimpleCli\Command;
 
+use Grano22\SimpleCli\Command\Input\CommandPartsBuilder;
+use Grano22\SimpleCli\Command\Input\SimpleCliOption;
 use RuntimeException;
 
 class SimpleCliInvokedCommand
 {
-    public static function build(): self
+    public static function build(string $scriptPath, array $commandParts): self
     {
-        global $argv, $argc;
-
-        $commandParts = [];
-        for ($argi = 1; $argi < $argc; $argi++) {
-            if (
-                str_starts_with('--', $argv[$argi]) &&
-                in_array($argv[$argi], $commandParts)
-            ) {
-                throw new RuntimeException("Duplicated option: {$argv[$argi]}");
-            }
-
-            $commandParts[] = ['content' => $argv[$argi], 'used' => false];
-        }
-
         return new self(
-            basename($argv[0]),
+            $scriptPath,
             $commandParts
         );
     }
 
     public function __construct(
         private string $scriptPath,
-        private array  $commandParts
-    )
-    {
+        private array $commandParts
+    ) {
     }
 
     public function markArgumentAsUsed(int $argumentIndex): void
     {
-        $this->commandParts[$argumentIndex]['used'] = true;
+        $this->commandParts['usagesMap'][$argumentIndex] = true;
     }
 
     public function getValueAssociatedToOption(string $optionName, bool $short, bool $shouldHaveValue): string|null|bool
     {
-        if ($short) {
-            $foundShortOption = current(
-                array_filter(
-                    $this->commandParts,
-                    static fn(array $part) => !$part['used'] && str_starts_with($part['content'], '-' . $optionName)
-                )
-            );
+        //var_dump($this->commandParts['usagesMap']);
 
-            if (!$foundShortOption) {
-                return null;
-            }
-
-            $partIndex = array_search(['content' => '-' . $optionName, 'used' => false], $this->commandParts);
-            $this->commandParts[$partIndex]['used'] = true;
-
-            if (!$shouldHaveValue) {
-                return true;
-            }
-
-            return str_replace('-' . $optionName, '', $foundShortOption);
-        }
-
-        $partIndex = array_search(['content' => '--' . $optionName, 'used' => false], $this->commandParts);
-
-        if ($partIndex === false) {
+        if (!isset($this->commandParts['usagesMap'][$optionName])) {
             return null;
         }
 
-        $this->commandParts[$partIndex]['used'] = true;
+        if ($this->commandParts['usagesMap'][$optionName]) {
+            throw new RuntimeException("Option $optionName is used twice");
+        }
+
+        $this->commandParts['usagesMap'][$optionName] = true;
 
         if (!$shouldHaveValue) {
             return true;
         }
 
-        if (!isset($this->commandParts[$partIndex + 1])) {
-            throw new RuntimeException("Missing value for long option $optionName");
+        $optionValue = $this->commandParts['values'][$optionName] ?? null;
+
+        if (!$short && $optionValue) {
+            $this->commandParts['usagesMapValues'][$optionName][$optionValue] = true;
         }
-
-        $optionValue = $this->commandParts[$partIndex + 1]['content'];
-
-//        if (str_replace(' ', '', $optionValue) === $optionValue && !ctype_alnum($optionValue)) {
-//            throw new RuntimeException("Invalid long option value");
-//        }
-
-        $this->commandParts[$partIndex + 1]['used'] = true;
 
         return $optionValue;
     }
 
     public function getAllParts(): array
     {
-        return $this->commandParts;
+        return $this->commandParts['parts'];
     }
 
     public function getUnusedParts(): array
     {
-        return array_filter($this->commandParts, static fn(array $part) => !$part['used']);
+        $usesMapValuesKeys = [];
+
+        foreach ($this->commandParts['usagesMapValues'] as $typeName => $usagesMapValue) {
+            foreach ($usagesMapValue as $valueKey => $used) {
+                if (!$used) {
+                    $usesMapValuesKeys[] = [$typeName, $valueKey];
+                }
+            }
+        }
+
+        foreach ($this->commandParts['usagesMap'] as $typeName => $used) {
+            if (!$used) {
+                $usesMapValuesKeys[] = [$typeName, $this->commandParts['values'][$typeName] ?? 'true'];
+            }
+        }
+
+        return $usesMapValuesKeys;
     }
 }

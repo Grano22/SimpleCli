@@ -23,6 +23,18 @@ class SimpleCliArgumentsCollection extends CollectionStructure {
         )) ?? null;
     }
 
+    /** @return array<string, mixed> */
+    public function toValuesMap(): array
+    {
+        $valuesMap = [];
+
+        foreach ($this->elements as $element) {
+            $valuesMap[$element->getName()] = $element->getValue();
+        }
+
+        return $valuesMap;
+    }
+
     /** @return SimpleCliArgument[] */
     public function toArray(): array
     {

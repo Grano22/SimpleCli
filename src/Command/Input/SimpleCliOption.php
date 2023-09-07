@@ -25,6 +25,11 @@ class SimpleCliOption {
         return $this->name;
     }
 
+    public function getShortNames(): array
+    {
+        return array_filter([$this->name, ...$this->aliases], static fn(string $name) => strlen($name) === 1);
+    }
+
     public function getAliases(): array
     {
         return $this->aliases;
