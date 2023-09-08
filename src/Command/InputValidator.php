@@ -32,7 +32,7 @@ class InputValidator
         if (
             $this->active &&
             !($this->exceptions & self::OMIT_REQUIRED_ARGUMENTS) &&
-            ($argument->getOptions() & SimpleCliArgument::REQUIRED) &&
+            $argument->isRequired() &&
             !isset($allParts[CommandPartsBuilder::ARGUMENT][$index])
         ) {
             echo "Argument " . $index + 1 . " named {$argument->getName()} must be specified";

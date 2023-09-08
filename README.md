@@ -13,7 +13,18 @@ SimpleCli
 ## Examples
 
 ```php
+use Grano22\SimpleCli\App\Factory\SimpleCliUniversalFilterConstraint;
+use Grano22\SimpleCli\App\SimpleCliAppFactory;
+use Grano22\SimpleCli\Command\Input\SimpleCliArgument;
+use Grano22\SimpleCli\Command\Input\SimpleCliCommandInput;
+use Grano22\SimpleCli\Command\Input\SimpleCliOption;
+
 $myAwesomeCliApp = SimpleCliAppFactory::create()
+    ->withCommandsOption(
+        commandNames: SimpleCliUniversalFilterConstraint::wildcard('*'),
+        name: 'help',
+        options: SimpleCliOption::OPTIONAL | SimpleCliOption::IGNORE_REST_REQUIRED | SimpleCliOption::NEGABLE
+    )
     ->withCommandsArguments(
         commandNames: ['greetings'],
         name: 'tone',

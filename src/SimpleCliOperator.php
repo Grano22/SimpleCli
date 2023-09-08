@@ -28,10 +28,10 @@ function non_block_read($fd): ?Generator {
 class SimpleCliOperator {
     private SimpleCliInvokedCommand $invokedCommand;
     private string $pipedData;
-    private InputValidator $inputValidator;
 
-    public function __construct() {
-        $this->inputValidator = new InputValidator(true);
+    public function __construct(
+        private InputValidator $inputValidator
+    ) {
     }
 
     public function prepareActualRequestedCommand(SimpleCliCommandsStack $definedCommands): ?SimpleCliCommand
@@ -57,11 +57,6 @@ class SimpleCliOperator {
 
         $this->invokedCommand = SimpleCliInvokedCommand::build(basename($argv[0]), $commandParts);
         $this->invokedCommand->markArgumentAsUsed(0);
-
-//        $independentArguments = array_map(
-//            static fn(SimpleCliOption $option) => $option->getOptions() & SimpleCliOption::IGNORE_REST_REQUIRED,
-//            $commandToUse->getDefinedOptions()->toArray(),
-//        );
 
         if ($commandParts['independent'] !== []) {
             $this->inputValidator->addException(

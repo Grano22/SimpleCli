@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Grano22\SimpleCli\Command\Input;
 
+use Grano22\SimpleCli\Command\Input\Part\CommandPart;
 use RuntimeException;
 
-class SimpleCliOption {
-    public const REQUIRED = 0b0001;
-    public const OPTIONAL = 0b0010;
+class SimpleCliOption extends CommandPart {
     public const NEGABLE = 0b0100;
     public const IGNORE_REST_REQUIRED = 0b1000;
 
@@ -16,10 +15,12 @@ class SimpleCliOption {
 
     public function __construct(
         private string $name,
-        private int $options = self::NEGABLE,
+        int $options = self::NEGABLE,
         /** @var string[] $aliases */
         private array $aliases = []
-    ) {}
+    ) {
+        parent::__construct($options);
+    }
 
     public function getName(): string
     {
@@ -54,16 +55,6 @@ class SimpleCliOption {
     public function isNegable(): bool
     {
         return !!($this->options & SimpleCliOption::NEGABLE);
-    }
-
-    public function isRequired(): bool
-    {
-        return !!($this->options & SimpleCliOption::REQUIRED);
-    }
-
-    public function isOptional(): bool
-    {
-        return !!($this->options & SimpleCliOption::OPTIONAL);
     }
 
     public function bindValue(mixed $newValue): self

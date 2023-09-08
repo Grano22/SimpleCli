@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 namespace Grano22\SimpleCli\Command\Input;
 
-class SimpleCliArgument {
-    public const OPTIONAL = 0b010;
-    public const REQUIRED = 0b001;
-    public const PIPED = 0b100;
+use Grano22\SimpleCli\Command\Input\Part\CommandPart;
+use RuntimeException;
+
+class SimpleCliArgument extends CommandPart {
+    public const PIPED = 0b1000;
 
     private mixed $value;
 
     public function __construct(
         private string $name,
-        private int $options = 0
-    ) {}
+        int $options = 0
+    ) {
+        parent::__construct($options);
+    }
 
     public function getName(): string
     {
