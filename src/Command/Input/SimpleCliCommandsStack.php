@@ -16,4 +16,13 @@ class SimpleCliCommandsStack extends CollectionStructure {
             $cliCommands
         );
     }
+
+    /** @return string[] */
+    public function getNames(): array
+    {
+        return array_map(
+            static fn(SimpleCliCommand $command) => $command->getName(),
+            $this->elements
+        );
+    }
 }

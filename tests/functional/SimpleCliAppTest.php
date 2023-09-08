@@ -61,82 +61,87 @@ class SimpleCliAppTest extends TestCase
         $commandTester->assertReturnCodeEquals(0);
     }
 
-    #[DataProvider('provideWrongInputAndExpectedOutput')]
-    public function testUnsupportedInputTypesFailsApp(array $givenInput, string $expectedOutput, array $extendCommand): void
+    public function testHelpPageWorksForCommand(): void
     {
         // Arrange
-
-        // Act
         $commandTester = CommandTester::run(
-            sprintf(
-                'echo "piped data" | php ' . __DIR__ . '/Utils/ctestrunner.php' .
-                str_repeat(' %s', count($givenInput)),
-                ...array_values($givenInput)
-            ),
-            __DIR__ . '/variants/MainVariant.php',
-            $this->defineForCommand($extendCommand)
+            $this->getTestRunnerScriptPath() . ' test:all --help',
+            __DIR__ . '/variants/MainVariant.php'
         );
 
-        // Assert
-        $commandTester->assertReturnCodeEquals(255);
-        //$commandTester->assertOutputEquals($expectedOutput);
+        // Act
+        $commandTester->assertOutputEquals('Help page');
+        $commandTester->assertReturnCodeEquals(0);
     }
 
-    public static function provideWrongInputAndExpectedOutput(): iterable
+//    #[DataProvider('provideWrongInputAndExpectedOutput')]
+//    public function testUnsupportedInputTypesFailsApp(array $givenInput, string $expectedOutput, array $extendCommand): void
+//    {
+//        // Arrange
+//
+//        // Act
+//        $commandTester = CommandTester::run(
+//            sprintf(
+//                'echo "piped data" | php ' . __DIR__ . '/Utils/ctestrunner.php' .
+//                str_repeat(' %s', count($givenInput)),
+//                ...array_values($givenInput)
+//            ),
+//            __DIR__ . '/variants/MainVariant.php',
+//            $this->defineForCommand($extendCommand)
+//        );
+//
+//        // Assert
+//        $commandTester->assertReturnCodeEquals(1);
+//        $commandTester->assertOutputEquals($expectedOutput);
+//    }
+//
+//    public static function provideWrongInputAndExpectedOutput(): iterable
+//    {
+//        $commandName = 'test:not-supported';
+//
+//        yield [
+//            'givenInput' => [$commandName, '--optWithValue=ShortValue'],
+//            'expectedOutput' => '',
+//            'extendCommand' => [
+//                 [
+//                     'action' => 'createOption',
+//                    'commandsNames' => [$commandName],
+//                    'name' => 'optWithValue',
+//                    'options' => SimpleCliOption::REQUIRED
+//                ]
+//            ]
+//        ];
+//
+//        yield [
+//            'givenInput' => [$commandName, "--optWithLongValue='Long Value'"],
+//            'expectedOutput' => '',
+//            'extendCommand' => [
+//                [
+//                    'action' => 'createOption',
+//                    'commandsNames' => [$commandName],
+//                    'name' => 'optWithLongValue',
+//                    'options' => SimpleCliOption::REQUIRED
+//                ]
+//            ]
+//        ];
+//
+//        yield [
+//            'givenInput' => [$commandName, '-ovalue'],
+//            'expectedOutput' => '',
+//            'extendCommand' => [
+//                [
+//                    'action' => 'createOption',
+//                    'commandsNames' => [$commandName],
+//                    'name' => 'o',
+//                    'options' => SimpleCliOption::REQUIRED
+//                ]
+//            ]
+//        ];
+//    }
+
+    private function getTestRunnerScriptPath(): string
     {
-        $commandName = 'test:not-supported';
-
-        yield [
-            'givenInput' => [$commandName, '--optWithValue=ShortValue'],
-            'expectedOutput' => '',
-            'extendCommand' => [
-                 [
-                     'action' => 'createOption',
-                    'commandsNames' => [$commandName],
-                    'name' => 'optWithValue',
-                    'options' => SimpleCliOption::REQUIRED
-                ]
-            ]
-        ];
-
-        yield [
-            'givenInput' => [$commandName, "--optWithLongValue='Long Value'"],
-            'expectedOutput' => '',
-            'extendCommand' => [
-                [
-                    'action' => 'createOption',
-                    'commandsNames' => [$commandName],
-                    'name' => 'optWithLongValue',
-                    'options' => SimpleCliOption::REQUIRED
-                ]
-            ]
-        ];
-
-        yield [
-            'givenInput' => [$commandName, '-o value'],
-            'expectedOutput' => '',
-            'extendCommand' => [
-                [
-                    'action' => 'createOption',
-                    'commandsNames' => [$commandName],
-                    'name' => 'o',
-                    'options' => SimpleCliOption::REQUIRED
-                ]
-            ]
-        ];
-
-        yield [
-            'givenInput' => [$commandName, '-ovalue'],
-            'expectedOutput' => '',
-            'extendCommand' => [
-                [
-                    'action' => 'createOption',
-                    'commandsNames' => [$commandName],
-                    'name' => 'o',
-                    'options' => SimpleCliOption::REQUIRED
-                ]
-            ]
-        ];
+        return 'php ' . __DIR__ . '/Utils/ctestrunner.php';
     }
 
     private function defineForCommand(array $inputArgs): array

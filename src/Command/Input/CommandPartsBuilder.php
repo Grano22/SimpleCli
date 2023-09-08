@@ -71,19 +71,17 @@ class CommandPartsBuilder
                 self::SHORT_OPTION => $baseCommandParts['parts'][self::SHORT_OPTION],
                 self::LONG_OPTION => $baseCommandParts['parts'][self::LONG_OPTION]
             ],
-            'values' => $baseCommandParts['values']
+            'values' => $baseCommandParts['values'],
+            'independent' => []
         ];
 
         /** @var SimpleCliOption $definedOption */
         foreach ($definedOptions as $definedOption) {
-            $shortNames = $definedOption->getShortNames();
+            $names = $definedOption->getAllNames();
 
-            foreach ($shortNames as $shortName) {
-                if (
-                    $definedOption->isNegable() &&
-                    isset($baseCommandParts['correlation'][$shortName])
-                ) {
-                    $shortOptions = str_split($baseCommandParts['correlation'][$shortName]);
+            foreach ($names as $name) {
+                if (strlen($name) === 1 && $definedOption->isNegable() && isset($baseCommandParts['correlation'][$name])) {
+                    $shortOptions = str_split($baseCommandParts['correlation'][$name]);
 
                     for ($index = 0; $index < count($shortOptions); $index++) {
                         if (in_array($shortOptions[$index], $baseCommandParts['parts'][self::SHORT_OPTION])) {
@@ -95,34 +93,24 @@ class CommandPartsBuilder
                     }
                 }
 
-                if (
-                    !$definedOption->isNegable() &&
-                    isset($baseCommandParts['correlation'][$shortName])
-                ) {
-                    $commandParts['values'][$shortName] = $baseCommandParts['correlation'][$shortName];
+                if (!$definedOption->isNegable() && isset($baseCommandParts['correlation'][$name])) {
+                    $commandParts['values'][$name] = $baseCommandParts['correlation'][$name];
 
-                    if (!array_key_exists($shortName, $commandParts['usagesMapValues'])) {
-                        $commandParts['usagesMapValues'][$shortName] = [];
+                    if (!array_key_exists($name, $commandParts['usagesMapValues'])) {
+                        $commandParts['usagesMapValues'][$name] = [];
                     }
 
-                    $commandParts['usagesMapValues'][$shortName][$baseCommandParts['correlation'][$shortName]] = false;
+                    $commandParts['usagesMapValues'][$name][$baseCommandParts['correlation'][$name]] = false;
                 }
-            }
 
-            $longNames = $definedOption->getLongNames();
-
-            foreach ($longNames as $longName) {
                 if (
-                    !($definedOption->getOptions() & SimpleCliOption::NEGABLE) &&
-                    isset($baseCommandParts['correlation'][$longName])
+                    ($definedOption->getOptions() & SimpleCliOption::IGNORE_REST_REQUIRED) &&
+                    (
+                        in_array($name, $baseCommandParts['parts'][self::SHORT_OPTION], true) ||
+                        in_array($name, $baseCommandParts['parts'][self::LONG_OPTION], true)
+                    )
                 ) {
-                    $commandParts['values'][$longName] = $baseCommandParts['correlation'][$longName];
-
-                    if (!array_key_exists($longName, $commandParts['usagesMapValues'])) {
-                        $commandParts['usagesMapValues'][$longName] = [];
-                    }
-
-                    $commandParts['usagesMapValues'][$longName][$baseCommandParts['correlation'][$longName]] = false;
+                    $commandParts['independent'][] = $name;
                 }
             }
         }

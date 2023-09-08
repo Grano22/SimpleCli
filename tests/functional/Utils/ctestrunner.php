@@ -25,7 +25,7 @@ if ($variantAppExtensions) {
     foreach ($parsedAppExtensions as $appExtension) {
         switch ($appExtension['action']) {
             case "createOption":
-                $appVariantProto->withCommandsOptions(
+                $appVariantProto->withCommandsOption(
                     commandNames: $appExtension['commandsNames'],
                     name: $appExtension['name'],
                     options: $appExtension['options'] ?? 0b0

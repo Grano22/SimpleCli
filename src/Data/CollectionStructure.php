@@ -5,7 +5,6 @@ namespace Grano22\SimpleCli\Data;
 use ArrayIterator;
 use Iterator;
 use IteratorAggregate;
-use Traversable;
 
 /** @template T */
 abstract class CollectionStructure implements IteratorAggregate {
@@ -24,5 +23,11 @@ abstract class CollectionStructure implements IteratorAggregate {
             array_key_exists($name, $this->elements) ?
                 $this->elements[$name] :
                 null;
+    }
+
+    /** @return T[] */
+    public function toArray(): array
+    {
+        return array_values($this->elements);
     }
 }

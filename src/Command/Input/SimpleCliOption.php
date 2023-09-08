@@ -7,9 +7,10 @@ namespace Grano22\SimpleCli\Command\Input;
 use RuntimeException;
 
 class SimpleCliOption {
-    public const OPTIONAL = 0b010;
-    public const REQUIRED = 0b001;
-    public const NEGABLE = 0b100;
+    public const REQUIRED = 0b0001;
+    public const OPTIONAL = 0b0010;
+    public const NEGABLE = 0b0100;
+    public const IGNORE_REST_REQUIRED = 0b1000;
 
     private mixed $value;
 
@@ -23,6 +24,11 @@ class SimpleCliOption {
     public function getName(): string
     {
         return $this->name;
+    }
+
+    public function getAllNames(): array
+    {
+        return [$this->name, ...$this->aliases];
     }
 
     public function getShortNames(): array
@@ -48,6 +54,16 @@ class SimpleCliOption {
     public function isNegable(): bool
     {
         return !!($this->options & SimpleCliOption::NEGABLE);
+    }
+
+    public function isRequired(): bool
+    {
+        return !!($this->options & SimpleCliOption::REQUIRED);
+    }
+
+    public function isOptional(): bool
+    {
+        return !!($this->options & SimpleCliOption::OPTIONAL);
     }
 
     public function bindValue(mixed $newValue): self

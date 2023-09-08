@@ -1,12 +1,18 @@
 <?php
 
+use Grano22\SimpleCli\App\Factory\SimpleCliUniversalFilterConstraint;
 use Grano22\SimpleCli\App\SimpleCliAppFactory;
 use Grano22\SimpleCli\Command\Input\SimpleCliArgument;
 use Grano22\SimpleCli\Command\Input\SimpleCliCommandInput;
 use Grano22\SimpleCli\Command\Input\SimpleCliOption;
 
 $cliAppProto = SimpleCliAppFactory::create()
-    ->withCommandsArguments(
+    ->withCommandsOption(
+        commandNames: SimpleCliUniversalFilterConstraint::wildcard('*'),
+        name: 'help',
+        options: SimpleCliOption::OPTIONAL | SimpleCliOption::IGNORE_REST_REQUIRED | SimpleCliOption::NEGABLE
+    )
+    ->withCommandsArgument(
         commandNames: ['test:all'],
         name: 'arg1',
         options: SimpleCliArgument::REQUIRED
@@ -21,7 +27,7 @@ $cliAppProto = SimpleCliAppFactory::create()
         name: 'optWithValue',
         options: SimpleCliOption::REQUIRED
     )
-    ->withCommandsOptions(
+    ->withCommandsOption(
         commandNames: ['test:all'],
         name: 'optWithLongValue',
         options: SimpleCliOption::REQUIRED
@@ -79,6 +85,12 @@ $cliAppProto = SimpleCliAppFactory::create()
     ->withCommand(
         name: 'test:all',
         executionLogic: static function(SimpleCliCommandInput $input) {
+            if ($input->getOptions()->getByName('help')->getValue()) {
+                echo "Help page";
+
+                return 0;
+            }
+
             $argument_1 = $input->getArguments()->getByName('arg1')->getValue();
             $option_1 = $input->getOptions()->getByName('optNegable')->getValue();
             $option_2 = $input->getOptions()->getByName('optWithValue')->getValue();
@@ -128,11 +140,11 @@ $cliAppProto = SimpleCliAppFactory::create()
                 echo "a is set" . PHP_EOL;
             }
 
-            if ($splited_negable_option_a) {
+            if ($splited_negable_option_b) {
                 echo "b is set" . PHP_EOL;
             }
 
-            if ($splited_negable_option_a) {
+            if ($splited_negable_option_c) {
                 echo "c is set" . PHP_EOL;
             }
 

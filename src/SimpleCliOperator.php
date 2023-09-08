@@ -9,6 +9,7 @@ use Grano22\SimpleCli\Command\Input\CommandPartsBuilder;
 use Grano22\SimpleCli\Command\Input\SimpleCliArgument;
 use Grano22\SimpleCli\Command\Input\SimpleCliCommandsStack;
 use Grano22\SimpleCli\Command\Input\SimpleCliOption;
+use Grano22\SimpleCli\Command\InputValidator;
 use Grano22\SimpleCli\Command\SimpleCliCommand;
 use Grano22\SimpleCli\Command\SimpleCliInvokedCommand;
 use RuntimeException;
@@ -27,8 +28,10 @@ function non_block_read($fd): ?Generator {
 class SimpleCliOperator {
     private SimpleCliInvokedCommand $invokedCommand;
     private string $pipedData;
+    private InputValidator $inputValidator;
 
     public function __construct() {
+        $this->inputValidator = new InputValidator(true);
     }
 
     public function prepareActualRequestedCommand(SimpleCliCommandsStack $definedCommands): ?SimpleCliCommand
@@ -54,6 +57,17 @@ class SimpleCliOperator {
 
         $this->invokedCommand = SimpleCliInvokedCommand::build(basename($argv[0]), $commandParts);
         $this->invokedCommand->markArgumentAsUsed(0);
+
+//        $independentArguments = array_map(
+//            static fn(SimpleCliOption $option) => $option->getOptions() & SimpleCliOption::IGNORE_REST_REQUIRED,
+//            $commandToUse->getDefinedOptions()->toArray(),
+//        );
+
+        if ($commandParts['independent'] !== []) {
+            $this->inputValidator->addException(
+                InputValidator::OMIT_REQUIRED_OPTIONS | InputValidator::OMIT_REQUIRED_ARGUMENTS
+            );
+        }
 
         $this->readPipeData();
         $this->readOptions($commandToUse);
@@ -104,12 +118,9 @@ class SimpleCliOperator {
                 continue;
             }
 
-            if (($argument->getOptions() & SimpleCliArgument::REQUIRED) && !isset($allParts[CommandPartsBuilder::ARGUMENT][$index])) {
-                echo "Argument " . $index + 1 . " named {$argument->getName()} must be specified";
-                exit(1);
-            }
+            $this->inputValidator->verifyIsArgumentMissing($argument, $index, $allParts);
 
-            if (($argument->getOptions() & SimpleCliArgument::OPTIONAL) && !isset($allParts[CommandPartsBuilder::ARGUMENT][$index])) {
+            if (!isset($allParts[CommandPartsBuilder::ARGUMENT][$index])) {
                 $argument->bindValue(null);
 
                 continue;
@@ -125,34 +136,31 @@ class SimpleCliOperator {
     private function readOptions(SimpleCliCommand $command): void
     {
         foreach ($command->getDefinedOptions()->toArray() as $option) {
-            $occuredTimes = 0;
+            $occurredTimes = 0;
+            $optionValue = null;
 
-            foreach ([$option->getName(), ...$option->getAliases()] as $alias) {
+            foreach ($option->getAllNames() as $alias) {
                 $optionValue = $this->invokedCommand->getValueAssociatedToOption(
                     $alias,
-                    $alias !== $option->getName(),
-                    !($option->getOptions() & SimpleCliOption::NEGABLE)
+                    strlen($alias) === 1,
+                    !$option->isNegable()
                 );
-                $occuredTimes += (int)isset($optionValue);
+                $occurredTimes += (int)isset($optionValue);
 
-                if ($occuredTimes > 1) {
+                if ($occurredTimes > 1) {
                     echo "Option {$option->getName()} as alias $alias can be only specified one time";
 
                     exit(1);
                 }
-
-                if ($occuredTimes) {
-                    $option->bindValue($optionValue);
-
-                    continue 2;
-                }
             }
 
-            if (!$occuredTimes && ($option->getOptions() & SimpleCliOption::REQUIRED)) {
-                echo "Option {$option->getName()} is missing";
+            if ($occurredTimes) {
+                $option->bindValue($optionValue);
 
-                exit(1);
+                continue;
             }
+
+            $this->inputValidator->verifyIsOptionMissing($occurredTimes, $option);
 
             $option->bindValue(null);
         }

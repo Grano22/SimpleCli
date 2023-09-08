@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Grano22\SimpleCli\Command;
 
-use Grano22\SimpleCli\Command\Input\CommandPartsBuilder;
-use Grano22\SimpleCli\Command\Input\SimpleCliOption;
 use RuntimeException;
 
 class SimpleCliInvokedCommand
@@ -31,8 +29,6 @@ class SimpleCliInvokedCommand
 
     public function getValueAssociatedToOption(string $optionName, bool $short, bool $shouldHaveValue): string|null|bool
     {
-        //var_dump($this->commandParts['usagesMap']);
-
         if (!isset($this->commandParts['usagesMap'][$optionName])) {
             return null;
         }
@@ -49,7 +45,7 @@ class SimpleCliInvokedCommand
 
         $optionValue = $this->commandParts['values'][$optionName] ?? null;
 
-        if (!$short && $optionValue) {
+        if ($optionValue) {
             $this->commandParts['usagesMapValues'][$optionName][$optionValue] = true;
         }
 

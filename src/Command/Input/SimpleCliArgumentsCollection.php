@@ -34,10 +34,4 @@ class SimpleCliArgumentsCollection extends CollectionStructure {
 
         return $valuesMap;
     }
-
-    /** @return SimpleCliArgument[] */
-    public function toArray(): array
-    {
-        return array_values($this->elements);
-    }
 }

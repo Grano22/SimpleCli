@@ -14,10 +14,4 @@ class SimpleCliOptionsCollection extends CollectionStructure {
             $cliArguments
         );
     }
-
-    /** @return SimpleCliOption[] */
-    public function toArray(): array
-    {
-        return array_values($this->elements);
-    }
 }
