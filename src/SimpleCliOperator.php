@@ -6,6 +6,11 @@ namespace Grano22\SimpleCli;
 
 use Generator;
 use Grano22\SimpleCli\Command\Input\CommandPartsBuilder;
+use Grano22\SimpleCli\Command\Input\Exception\ArgumentIsMissing;
+use Grano22\SimpleCli\Command\Input\Exception\CommandNotFound;
+use Grano22\SimpleCli\Command\Input\Exception\CommandOptionIsMissing;
+use Grano22\SimpleCli\Command\Input\Exception\CommandOptionOccurredAtLeastTwice;
+use Grano22\SimpleCli\Command\Input\Exception\UnusedCommandParts;
 use Grano22\SimpleCli\Command\Input\SimpleCliArgument;
 use Grano22\SimpleCli\Command\Input\SimpleCliCommandsStack;
 use Grano22\SimpleCli\Command\Input\SimpleCliOption;
@@ -34,10 +39,15 @@ class SimpleCliOperator {
     ) {
     }
 
-    public function prepareActualRequestedCommand(SimpleCliCommandsStack $definedCommands): ?SimpleCliCommand
+    /**
+     * @throws CommandNotFound
+     * @throws UnusedCommandParts
+     * @throws CommandOptionIsMissing
+     * @throws ArgumentIsMissing
+     * @throws CommandOptionOccurredAtLeastTwice
+     */
+    public function prepareActualRequestedCommand(SimpleCliCommandsStack $definedCommands, array $argv, int $argc): ?SimpleCliCommand
     {
-        global $argv, $argc;
-
         $commandPartBuilder = new CommandPartsBuilder();
         $commandParts = $commandPartBuilder->build($argv, $argc);
 
@@ -45,8 +55,7 @@ class SimpleCliOperator {
         $commandToUse = $definedCommands->getByName($requestedCommand);
 
         if (!$commandToUse) {
-            echo "Unknown command $requestedCommand";
-            exit(1);
+            throw new CommandNotFound($requestedCommand, 0);
         }
 
         $commandParts = $commandPartBuilder->rebuildWithSeparatedArgs(
@@ -71,13 +80,7 @@ class SimpleCliOperator {
         $unusedParts = $this->invokedCommand->getUnusedParts();
 
         if ($unusedParts !== []) {
-            throw new RuntimeException(
-                "Unused parts: " .
-                implode(
-                    ',',
-                    array_map(static fn(array $unusedPart) => $unusedPart[0] . ' - ' . $unusedPart[1], $unusedParts)
-                )
-            );
+            throw UnusedCommandParts::createWithParsedParts($unusedParts);
         }
 
         return $commandToUse;
@@ -101,6 +104,9 @@ class SimpleCliOperator {
         return $this->pipedData;
     }
 
+    /**
+     * @throws ArgumentIsMissing
+     */
     private function readArguments(SimpleCliCommand $command): void
     {
         $allParts = $this->invokedCommand->getAllParts();
@@ -128,6 +134,10 @@ class SimpleCliOperator {
         }
     }
 
+    /**
+     * @throws CommandOptionIsMissing
+     * @throws CommandOptionOccurredAtLeastTwice
+     */
     private function readOptions(SimpleCliCommand $command): void
     {
         foreach ($command->getDefinedOptions()->toArray() as $option) {
@@ -143,9 +153,7 @@ class SimpleCliOperator {
                 $occurredTimes += (int)isset($optionValue);
 
                 if ($occurredTimes > 1) {
-                    echo "Option {$option->getName()} as alias $alias can be only specified one time";
-
-                    exit(1);
+                    throw CommandOptionOccurredAtLeastTwice::createForOptionAlias($option->getName(), $alias);
                 }
             }
 

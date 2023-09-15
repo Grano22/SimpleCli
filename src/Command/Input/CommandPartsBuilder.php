@@ -12,8 +12,12 @@ class CommandPartsBuilder
     public const ARGUMENT = 'argument';
     public const SHORT_OPTION = 'short_option';
     public const LONG_OPTION = 'long_option';
-
-    public const POSIX_SHORT_ARGUMENT = '-%s';
+    private const PART_EXTRACTORS = [
+        self::ARGUMENT => 'prepareArgument',
+        self::SHORT_OPTION => 'prepareShortOption',
+        self::LONG_OPTION => 'prepareLongOption',
+        self::UNKNOWN => 'handleUnknownPart'
+    ];
 
     public function build(array $argv, int $argc): array {
         $commandParts = [
@@ -25,34 +29,14 @@ class CommandPartsBuilder
                 self::LONG_OPTION => []
             ],
             'values' => [],
-            'correlation' => []
+            'correlation' => [],
+            'duplicates' => []
         ];
-
-        $argumentLastPosition = 0;
 
         for ($argIndex = 1; $argIndex < $argc; $argIndex++) {
             $partType = $this->determineCommandPartType($argv[$argIndex]);
 
-
-            if ($partType === self::SHORT_OPTION) {
-                $this->prepareShortOption($commandParts, $argv, $argIndex);
-
-                continue;
-            }
-
-            if ($partType === self::LONG_OPTION) {
-                $this->prepareLongOption($commandParts, $argv, $argIndex);
-
-                continue;
-            }
-
-            if ($partType === self::ARGUMENT) {
-                $this->prepareArgument($commandParts,  $argv, $argIndex, $argumentLastPosition);
-
-                continue;
-            }
-
-            throw new RuntimeException("Unknown part {$argv[$argIndex]}");
+            $this->{self::PART_EXTRACTORS[$partType]}($commandParts, $argv, $argIndex);
         }
 
         return $commandParts;
@@ -118,7 +102,7 @@ class CommandPartsBuilder
         return $commandParts;
     }
 
-    private function prepareArgument(array &$commandParts, array $args, int $argIndex, int &$argumentLastPosition): void
+    private function prepareArgument(array &$commandParts, array $args, int $argIndex): void
     {
         if ($argIndex !== 0 && in_array($this->determineCommandPartType($args[$argIndex - 1]), [self::SHORT_OPTION, self::LONG_OPTION])) {
             $optionName = ltrim($args[$argIndex - 1], '-');
@@ -127,9 +111,9 @@ class CommandPartsBuilder
             return;
         }
 
-        $partName = $argumentLastPosition++;
+        $partName = count($commandParts['parts'][self::ARGUMENT]);
         $commandParts['values'][$partName] = $args[$argIndex];
-        $commandParts['parts'][self::ARGUMENT][] = $args[$argIndex];
+        $commandParts['parts'][self::ARGUMENT][$partName] = $args[$argIndex];
         $commandParts['usagesMap'][$partName] = false;
     }
 
@@ -199,5 +183,10 @@ class CommandPartsBuilder
         }
 
         return self::ARGUMENT;
+    }
+
+    private function handleUnknownPart(array &$commandParts, array $args, int $argIndex): void
+    {
+        throw new RuntimeException("Unknown part {$args[$argIndex]}");
     }
 }

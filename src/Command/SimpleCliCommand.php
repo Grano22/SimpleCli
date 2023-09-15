@@ -6,6 +6,7 @@ namespace Grano22\SimpleCli\Command;
 
 use Closure;
 use Grano22\SimpleCli\App\SimpleCliAppExecutionContext;
+use Grano22\SimpleCli\Command\Input\Exception\CommandHandlerHasMissingReturnCode;
 use Grano22\SimpleCli\Command\Input\SimpleCliArgumentsCollection;
 use Grano22\SimpleCli\Command\Input\SimpleCliCommandInput;
 use Grano22\SimpleCli\Command\Input\SimpleCliOptionsCollection;
@@ -34,6 +35,9 @@ class SimpleCliCommand {
         return $this->definedOptions;
     }
 
+    /**
+     * @throws CommandHandlerHasMissingReturnCode
+     */
     public function execute(?string $stdinPipedData, SimpleCliAppExecutionContext $context): int
     {
         $returnCode = $this->executionLogic->__invoke(
@@ -46,9 +50,7 @@ class SimpleCliCommand {
         );
 
         if (!is_int($returnCode)) {
-            echo "Command {$this->getName()} missing return code";
-
-            exit(1);
+            throw CommandHandlerHasMissingReturnCode::createWithHandlerDetails($this->getName());
         }
 
         return $returnCode;

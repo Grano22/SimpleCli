@@ -13,6 +13,7 @@ use Grano22\SimpleCli\Command\Input\SimpleCliCommandsStack;
 use Grano22\SimpleCli\Command\Input\SimpleCliOption;
 use Grano22\SimpleCli\Command\Input\SimpleCliOptionsCollection;
 use Grano22\SimpleCli\Command\SimpleCliCommand;
+use Grano22\SimpleCli\Core\InvokerMap;
 
 class SimpleCliAppFactory {
     /** @var array<string, array> $definedCommands */
@@ -29,6 +30,8 @@ class SimpleCliAppFactory {
     private array $lateBoundArguments = [];
 
     private SimpleCliAppConfig $appConfig;
+    private InvokerMap $handlersMap;
+    private InvokerMap $listenersMap;
 
     public static function create(): self
     {
@@ -40,6 +43,8 @@ class SimpleCliAppFactory {
         $this->appConfig = new SimpleCliAppConfig(
             debug: false
         );
+        $this->handlersMap = new InvokerMap();
+        $this->listenersMap = new InvokerMap();
     }
 
     public function withCliAppConfiguration(
@@ -184,6 +189,22 @@ class SimpleCliAppFactory {
         return $this;
     }
 
+    public function setUnexpectedErrorHandler(callable $fn): self
+    {
+        $this->handlersMap->addInvocable($fn, SimpleCliApp::HANDLER_UNEXPECTED_ERRORS);
+
+        return $this;
+    }
+
+    public function addEventsListener(callable $fn, array $targetEvents): self
+    {
+        foreach ($targetEvents as $targetEvent) {
+            $this->listenersMap->addInvocable($fn, $targetEvent);
+        }
+
+        return $this;
+    }
+
     public function build(): SimpleCliApp
     {
         $createdCommands = [];
@@ -219,6 +240,12 @@ class SimpleCliAppFactory {
             );
         }
 
-        return SimpleCliApp::createWithConfigAndCommands($this->appConfig, $createdCommands);
+        $this->handlersMap->addSubset($this->listenersMap, 'listeners');
+
+        return SimpleCliApp::createWithConfigAndCommands(
+            $this->appConfig,
+            $createdCommands,
+            $this->handlersMap
+        );
     }
 }

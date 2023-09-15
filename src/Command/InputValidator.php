@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Grano22\SimpleCli\Command;
 
 use Grano22\SimpleCli\Command\Input\CommandPartsBuilder;
+use Grano22\SimpleCli\Command\Input\Exception\ArgumentIsMissing;
+use Grano22\SimpleCli\Command\Input\Exception\CommandOptionIsMissing;
 use Grano22\SimpleCli\Command\Input\SimpleCliArgument;
 use Grano22\SimpleCli\Command\Input\SimpleCliOption;
 
@@ -27,6 +29,9 @@ class InputValidator
         $this->exceptions |= $newException;
     }
 
+    /**
+     * @throws ArgumentIsMissing
+     */
     public function verifyIsArgumentMissing(SimpleCliArgument $argument, int $index, array $allParts): void
     {
         if (
@@ -35,17 +40,17 @@ class InputValidator
             $argument->isRequired() &&
             !isset($allParts[CommandPartsBuilder::ARGUMENT][$index])
         ) {
-            echo "Argument " . $index + 1 . " named {$argument->getName()} must be specified";
-            exit(1);
+            throw ArgumentIsMissing::create($index + 1, $argument->getName());
         }
     }
 
+    /**
+     * @throws CommandOptionIsMissing
+     */
     public function verifyIsOptionMissing(int $occurredTimes, SimpleCliOption $option): void
     {
         if ($this->active && !($option->getOptions() & self::OMIT_REQUIRED_OPTIONS) && !$occurredTimes && $option->isRequired()) {
-            echo "Option {$option->getName()} is missing";
-
-            exit(1);
+            throw CommandOptionIsMissing::create($option->getName());
         }
     }
 }
