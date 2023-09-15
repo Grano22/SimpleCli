@@ -115,7 +115,10 @@ class SimpleCliAppFactory {
     public function withCommandOption(
         string $commandName,
         string $name,
-        int $options
+        int $options,
+        /** @param string[] $aliases */
+        array $aliases = [],
+        mixed $defaultValue = null
     ): self {
         $previouslyDefinedOptions = isset($this->definedOptionsForCommand[$commandName])
             ? $this->definedOptionsForCommand[$commandName]->toArray()
@@ -123,7 +126,9 @@ class SimpleCliAppFactory {
 
         $previouslyDefinedOptions[] = new SimpleCliOption(
             $name,
-            $options
+            $options,
+            $aliases,
+            $defaultValue
         );
 
         $this->definedOptionsForCommand[$commandName] = new SimpleCliOptionsCollection(...$previouslyDefinedOptions);
@@ -135,20 +140,25 @@ class SimpleCliAppFactory {
         /** @param string[]|SimpleCliFilterConstraint $commandNames */
         array|SimpleCliFilterConstraint $commandNames,
         string $name,
-        int $options
+        int $options,
+        /** @param string[] $aliases */
+        array $aliases = [],
+        mixed $defaultValue = null
     ): self {
         if ($commandNames instanceof SimpleCliFilterConstraint) {
             $this->lateBoundOptions[$name] = [
                 'wildcard' => $commandNames,
                 'name' => $name,
-                'options' => $options
+                'options' => $options,
+                'aliases' => $aliases,
+                'defaultValue' => $defaultValue
             ];
 
             return $this;
         }
 
         foreach ($commandNames as $commandName) {
-            $this->withCommandOption($commandName, $name, $options);
+            $this->withCommandOption($commandName, $name, $options, $aliases, $defaultValue);
         }
 
         return $this;
@@ -159,10 +169,13 @@ class SimpleCliAppFactory {
         array|SimpleCliFilterConstraint $commandNames,
         /** @param string[] $names */
         array $names,
-        int $options
+        int $options,
+        /** @param string[] $aliases */
+        array $aliases = [],
+        mixed $defaultValue = null
     ): self {
         foreach ($names as $name) {
-            $this->withCommandsOption($commandNames, $name, $options);
+            $this->withCommandsOption($commandNames, $name, $options, $aliases, $defaultValue);
         }
 
         return $this;
@@ -227,7 +240,13 @@ class SimpleCliAppFactory {
             );
 
             foreach ($commandNames as $commandName) {
-                $this->withCommandOption($commandName,$lateBoundOption['name'], $lateBoundOption['options']);
+                $this->withCommandOption(
+                    $commandName,
+                    $lateBoundOption['name'],
+                    $lateBoundOption['options'],
+                    $lateBoundOption['aliases'],
+                    $lateBoundOption['defaultValue']
+                );
             }
         }
 

@@ -19,7 +19,7 @@ handle various use cases for example: OutputWriter is standalone component, also
 
 ## Examples
 
-General example:
+__General example__:
 
 ```php
 use Grano22\SimpleCli\App\Factory\SimpleCliUniversalFilterConstraint;
@@ -78,6 +78,8 @@ $myAwesomeCliApp->autoExecuteCommand();
 
 ---
 
+__Adding event listeners__:
+
 ```php
 $myAwesomeCliApp = SimpleCliAppFactory::create()
     // Define your event listener for one or multiple events
@@ -87,4 +89,24 @@ $myAwesomeCliApp = SimpleCliAppFactory::create()
         exit(1);
     }, [CommandNotFoundEvent::class, MissingArgumentEvent::class])
 ;
+```
+
+---
+
+__Adding options with aliases and default values__
+
+```php
+$myAwesomeCliApp = SimpleCliAppFactory::create()
+    ->withCommandOption(
+        commandName: 'cmd1',
+        name: 'optWithAliases',
+        options: SimpleCliOption::REQUIRED,
+        aliases: ['l', 'q']
+    )
+    ->withCommandOption(
+        commandName: 'cmd1',
+        name: 'optWithDefaultValue',
+        options: SimpleCliOption::OPTIONAL,
+        defaultValue: 'DEFAULT_VALUE'
+    )
 ```

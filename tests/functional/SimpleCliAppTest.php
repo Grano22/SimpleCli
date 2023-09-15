@@ -22,11 +22,12 @@ class SimpleCliAppTest extends TestCase
         $short_option_with_trimed_value = 'trimed_val';
         $simplified_option_value = 'simple';
         $complex_option_value = 'Complex Value';
+        $with_alias_value = 'AliasValue';
 
         // Act
         $commandTester = CommandTester::run(
             sprintf(
-                'echo "%s" | php ' . __DIR__ . '/Utils/ctestrunner.php test:all' . str_repeat(' %s', 9),
+                'echo "%s" | php ' . __DIR__ . '/Utils/ctestrunner.php test:all' . str_repeat(' %s', 10),
                 $piped_data,
                 $argument_1,
                 '--optNegable',
@@ -36,7 +37,8 @@ class SimpleCliAppTest extends TestCase
                 "-p$short_option_with_trimed_value",
                 "--optWithSimplifiedValue=$simplified_option_value",
                 "--optWithComplexValue='$complex_option_value'",
-                "-abc"
+                "-abc",
+                "-q$with_alias_value"
             ),
             __DIR__ . '/variants/MainVariant.php'
         );
@@ -55,6 +57,8 @@ class SimpleCliAppTest extends TestCase
             a is set
             b is set
             c is set
+            optWithAliases is set as alias q with value $with_alias_value
+            optWithDefaultValue is not set but has default value DEFAULT_DEFINED_VALUE
             Data from stdin: $piped_data
             EXPECTED
         );

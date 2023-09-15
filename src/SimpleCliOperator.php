@@ -158,14 +158,14 @@ class SimpleCliOperator {
             }
 
             if ($occurredTimes) {
-                $option->bindValue($optionValue);
+                $option->bindValue($optionValue, true);
 
                 continue;
             }
 
             $this->inputValidator->verifyIsOptionMissing($occurredTimes, $option);
 
-            $option->bindValue(null);
+            $option->bindValue($option->getDefaultValue());
         }
     }
 }

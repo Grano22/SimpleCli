@@ -49,7 +49,7 @@ class InputValidator
      */
     public function verifyIsOptionMissing(int $occurredTimes, SimpleCliOption $option): void
     {
-        if ($this->active && !($option->getOptions() & self::OMIT_REQUIRED_OPTIONS) && !$occurredTimes && $option->isRequired()) {
+        if ($this->active && !($this->exceptions & self::OMIT_REQUIRED_OPTIONS) && !$occurredTimes && $option->isRequired()) {
             throw CommandOptionIsMissing::create($option->getName());
         }
     }

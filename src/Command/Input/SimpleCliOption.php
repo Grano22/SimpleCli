@@ -12,14 +12,21 @@ class SimpleCliOption extends CommandPart {
     public const IGNORE_REST_REQUIRED = 0b1000;
 
     private mixed $value;
+    private bool $defined = false;
 
     public function __construct(
         private string $name,
         int $options = self::NEGABLE,
         /** @var string[] $aliases */
-        private array $aliases = []
+        private array $aliases = [],
+        private mixed $defaultValue = null
     ) {
         parent::__construct($options);
+    }
+
+    public function isDefined(): bool
+    {
+        return $this->defined;
     }
 
     public function getName(): string
@@ -47,6 +54,11 @@ class SimpleCliOption extends CommandPart {
         return $this->aliases;
     }
 
+    public function getDefaultValue(): mixed
+    {
+        return $this->defaultValue;
+    }
+
     public function getOptions(): int
     {
         return $this->options;
@@ -57,9 +69,10 @@ class SimpleCliOption extends CommandPart {
         return !!($this->options & SimpleCliOption::NEGABLE);
     }
 
-    public function bindValue(mixed $newValue): self
+    public function bindValue(mixed $newValue, bool $valueIsDefined = false): self
     {
         $this->value = $newValue;
+        $this->defined = $valueIsDefined;
 
         return $this;
     }

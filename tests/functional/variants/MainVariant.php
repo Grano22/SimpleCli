@@ -77,6 +77,18 @@ $cliAppProto = SimpleCliAppFactory::create()
         name: 'c',
         options: SimpleCliOption::REQUIRED | SimpleCliOption::NEGABLE
     )
+    ->withCommandOption(
+        commandName: 'test:all',
+        name: 'optWithAliases',
+        options: SimpleCliOption::REQUIRED,
+        aliases: ['l', 'q']
+    )
+    ->withCommandOption(
+        commandName: 'test:all',
+        name: 'optWithDefaultValue',
+        options: SimpleCliOption::OPTIONAL,
+        defaultValue: 'DEFAULT_DEFINED_VALUE'
+    )
 //    ->withCommandOption(
 //        commandName: 'test:no-supported',
 //        name: 'o',
@@ -103,6 +115,9 @@ $cliAppProto = SimpleCliAppFactory::create()
             $splited_negable_option_a = $input->getOptions()->getByName('a')->getValue();
             $splited_negable_option_b = $input->getOptions()->getByName('b')->getValue();
             $splited_negable_option_c = $input->getOptions()->getByName('c')->getValue();
+            $optionWithAliases = $input->getOptions()->getByName('optWithAliases')->getValue();
+            $optionWithDefaultValue = $input->getOptions()->getByName('optWithDefaultValue');
+            $valueOfOptionWithDefaultValue = $optionWithDefaultValue->getValue();
 
             if ($argument_1) {
                 echo "arg1 is $argument_1" . PHP_EOL;
@@ -146,6 +161,14 @@ $cliAppProto = SimpleCliAppFactory::create()
 
             if ($splited_negable_option_c) {
                 echo "c is set" . PHP_EOL;
+            }
+
+            if ($optionWithAliases) {
+                echo "optWithAliases is set as alias q with value $optionWithAliases" . PHP_EOL;
+            }
+
+            if (!$optionWithDefaultValue->isDefined()) {
+                echo "optWithDefaultValue is not set but has default value $valueOfOptionWithDefaultValue" . PHP_EOL;
             }
 
             echo "Data from stdin: $piped_data";
