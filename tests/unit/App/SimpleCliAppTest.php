@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App;
+namespace Grano22\SimpleCli\Tests\Unit;
 
 use Exception;
 use Grano22\SimpleCli\App\SimpleCliAppFactory;

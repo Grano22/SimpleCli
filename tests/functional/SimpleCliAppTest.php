@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Grano22\SimpleCli\Tests\Functional;
 
-use Grano22\SimpleCli\Command\Input\SimpleCliOption;
 use Grano22\SimpleCli\Tests\Functional\Utils\CommandTester;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class SimpleCliAppTest extends TestCase

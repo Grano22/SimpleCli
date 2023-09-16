@@ -1,6 +1,10 @@
 SimpleCli
 ===========
 
+### Project details
+
+* Version: v1.0.0
+
 ### Project Motto
 
 'Create CLI Apps with easy and modular way :)'

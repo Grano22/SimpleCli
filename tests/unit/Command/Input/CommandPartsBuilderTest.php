@@ -2,15 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Command\Input;
+namespace Grano22\SimpleCli\Tests\Unit\Input;
 
 use Grano22\SimpleCli\Command\Input\CommandPartsBuilder;
 use Grano22\SimpleCli\Command\Input\SimpleCliArgumentsCollection;
 use Grano22\SimpleCli\Command\Input\SimpleCliOption;
 use Grano22\SimpleCli\Command\Input\SimpleCliOptionsCollection;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
+#[CoversClass(CommandPartsBuilder::class)]
 class CommandPartsBuilderTest extends TestCase
 {
     public static function provideArgs(): iterable
